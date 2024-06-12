@@ -15,6 +15,7 @@
 
 package uk.co.spudsoft.birt.emitters.excel;
 
+import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
@@ -29,12 +30,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import javax.swing.text.StyleConstants;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.PrintSetup;
 import org.apache.poi.ss.usermodel.RichTextString;
@@ -44,7 +46,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
 import org.eclipse.birt.report.engine.content.IPageContent;
-import org.eclipse.birt.report.engine.css.engine.StyleConstants;
 import org.eclipse.birt.report.engine.css.engine.value.DataFormatValue;
 import org.eclipse.birt.report.engine.css.engine.value.StringValue;
 import org.eclipse.birt.report.engine.css.engine.value.css.CSSConstants;
@@ -489,11 +490,23 @@ public abstract class StyleManagerUtils {
 	 * @return A string representing a data format in Excel.
 	 */
 	private String poiNumberFormatFromBirt(String birtFormat) {
-		if ("General Number".equalsIgnoreCase(birtFormat)) {
-			return null;
-		}
-		if (birtFormat.startsWith(ExcelEmitter.CUSTOM_NUMBER_FORMAT)) {
-			return birtFormat.substring(ExcelEmitter.CUSTOM_NUMBER_FORMAT.length());
+		if (birtFormat.equalsIgnoreCase("Currency")) {
+			birtFormat = "#,##0.00";
+		} else if (birtFormat.equalsIgnoreCase("Fixed")) {
+			birtFormat = "###0.00";
+		} else {
+			if (birtFormat.equalsIgnoreCase("General Number"))
+				return null;
+			if (birtFormat.equalsIgnoreCase("Percent")) {
+				birtFormat = "###0.00%";
+			} else if (birtFormat.equalsIgnoreCase("Scientific")) {
+				birtFormat = "0.00E00";
+			} else {
+				if (birtFormat.equalsIgnoreCase("Standard"))
+					return null;
+				if (birtFormat.equalsIgnoreCase("Unformatted"))
+					return null;
+			}
 		}
 
 		birtFormat = birtFormat.replace("E00", "E+00");
